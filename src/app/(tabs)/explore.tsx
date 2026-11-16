@@ -50,32 +50,79 @@ export default function ExploreScreen() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  const months: Record<string, number> = {
+    januari: 0,
+    februari: 1,
+    maret: 2,
+    april: 3,
+    mei: 4,
+    juni: 5,
+    juli: 6,
+    agustus: 7,
+    september: 8,
+    oktober: 9,
+    november: 10,
+    desember: 11,
+  };
+
   const getDateDifference = (dateString: string) => {
-    const parts = dateString.split('/');
+    if (!dateString) {
+      return null;
+    }
 
-    let date: Date;
+    const value = dateString.trim().toLowerCase();
 
-    if (parts.length === 3) {
-      // Format DD/MM/YYYY
-      date = new Date(
-        Number(parts[2]),
-        Number(parts[1]) - 1,
-        Number(parts[0])
-      );
-    } else {
-      // Format DD Month YYYY
-      // Contoh: 16 November 2026
-      const parsedDate = new Date(dateString);
+    let day: number;
+    let month: number;
+    let year: number;
 
-      if (isNaN(parsedDate.getTime())) {
+    // Format DD/MM/YYYY
+    if (value.includes('/')) {
+      const parts = value.split('/');
+
+      if (parts.length !== 3) {
         return null;
       }
 
-      date = new Date(
-        parsedDate.getFullYear(),
-        parsedDate.getMonth(),
-        parsedDate.getDate()
-      );
+      day = Number(parts[0]);
+      month = Number(parts[1]) - 1;
+      year = Number(parts[2]);
+    } else {
+      // Format DD Month YYYY
+      // Contoh: 17 November 2026
+      const parts = value.split(/\s+/);
+
+      if (parts.length !== 3) {
+        return null;
+      }
+
+      day = Number(parts[0]);
+      month = months[parts[1]];
+      year = Number(parts[2]);
+    }
+
+    if (
+      !Number.isInteger(day) ||
+      !Number.isInteger(month) ||
+      !Number.isInteger(year) ||
+      month < 0 ||
+      month > 11 ||
+      day < 1 ||
+      day > 31 ||
+      year < 1900
+    ) {
+      return null;
+    }
+
+    const date = new Date(year, month, day);
+
+    // Memastikan tanggal benar-benar valid
+    if (
+      date.getFullYear() !== year ||
+      date.getMonth() !== month ||
+      date.getDate() !== day
+    ) {
+      return null;
     }
 
     date.setHours(0, 0, 0, 0);
@@ -86,7 +133,9 @@ export default function ExploreScreen() {
     );
   };
 
-  const pendingTasks = tasks.filter((task) => !task.completed);
+  const pendingTasks = tasks.filter(
+    (task) => !task.completed
+  );
 
   const overdueTasks = pendingTasks.filter((task) => {
     const difference = getDateDifference(task.dueDate);
